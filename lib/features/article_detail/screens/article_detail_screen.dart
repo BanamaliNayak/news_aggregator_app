@@ -2,98 +2,144 @@ import 'package:aggregator_app/data/models/article_model.dart';
 import 'package:aggregator_app/features/article_detail/screens/article_webview_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class ArticleDetailScreen extends StatelessWidget {
-// region properties
+  // region properties
   final ArticleModel article;
+  // endregion
 
-// endregion
-
-// region constructor
+  // region constructor
   const ArticleDetailScreen({super.key, required this.article});
+  // endregion
 
-// endregion
-
-// region build
+  // region build
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme
-        .of(context)
-        .textTheme;
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(article.source?.name ?? 'Article'),
+        elevation: 2.0.h,
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.symmetric(horizontal: 18.0.w, vertical: 20.0.h),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // region Title
               Text(
                 article.title,
-                style: textTheme.headlineMedium
-                    ?.copyWith(fontWeight: FontWeight.bold),
+                style: textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold, height: 1.3.h),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 16.h),
               // endregion
 
-              // region Metadata
-              Text(
-                'By ${article.author ?? article.source?.name ?? 'Unknown'}',
-                style: textTheme.titleSmall
-                    ?.copyWith(color: Colors.grey[600]),
+              // region Metadata - Improved Styling
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'By ${article.author ?? article.source?.name ?? 'Unknown'}',
+                      style: textTheme.bodyMedium
+                          ?.copyWith(color: Colors.grey[700]),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 6.h),
               if (article.publishedAt != null)
-                Text(
-                  DateFormat.yMMMd()
-                      .add_jm()
-                      .format(article.publishedAt!.toLocal()),
-                  style: textTheme.titleSmall
-                      ?.copyWith(color: Colors.grey[600]),
+                Row(
+                  children: [
+                    Text(
+                      DateFormat.yMMMd()
+                          .add_jm()
+                          .format(article.publishedAt!.toLocal()),
+                      style: textTheme.bodyMedium
+                          ?.copyWith(color: Colors.grey[700]),
+                    ),
+                  ],
                 ),
-              const SizedBox(height: 16),
+              SizedBox(height: 24.h),
               // endregion
 
               // region Image
               if (article.urlToImage != null)
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12.r),
                   child: Image.network(
                     article.urlToImage!,
                     width: double.infinity,
                     fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        height: 200.h,
+                        color: Colors.grey[200],
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                loadingProgress.expectedTotalBytes!
+                                : null,
+                          ),
+                        ),
+                      );
+                    },
                     errorBuilder: (context, error, stackTrace) {
-                      return const SizedBox.shrink(); // Hide if error
+                      return Container(
+                        height: 200.h,
+                        color: Colors.grey[200],
+                        child: Icon(Icons.broken_image,
+                            color: Colors.grey, size: 40.sp),
+                      );
                     },
                   ),
                 ),
-              if (article.urlToImage != null) const SizedBox(height: 16),
+              if (article.urlToImage != null) SizedBox(height: 24.h),
               // endregion
 
               // region Description
-              if (article.description != null)
-                Text(
-                  article.description!,
-                  style: textTheme.bodyLarge?.copyWith(fontSize: 18),
+              if (article.description != null &&
+                  article.description!.isNotEmpty)
+                Padding(
+                  padding: EdgeInsets.only(bottom: 16.0.h),
+                  child: Text(
+                    article.description!,
+                    style: textTheme.bodyLarge?.copyWith(
+                        fontSize: 17.sp,
+                        fontStyle: FontStyle.italic,
+                        color: Colors.grey[800]),
+                  ),
                 ),
-              const SizedBox(height: 16),
+              if (article.description != null &&
+                  article.description!.isNotEmpty &&
+                  article.content != null &&
+                  article.content!.isNotEmpty)
+                Divider(
+                  height: 32.h,
+                  thickness: 0.5.h,
+                  color: Colors.grey[400],
+                ),
               // endregion
 
               // region Content
-              if (article.content != null)
+              if (article.content != null && article.content!.isNotEmpty) ...[
                 Text(
-                  // NewsAPI often truncates content
-                  article.content!.split('[+')[0],
-                  style: textTheme.bodyMedium?.copyWith(
-                    fontSize: 16,
-                    height: 1.5,
-                  ),
+                  article.content!
+                      .split('[+')[0]
+                      .replaceAll(RegExp(r'<[^>]*>|&[^;]+;'), ' ')
+                      .trim(),
+                  style: textTheme.bodyLarge
+                      ?.copyWith(fontSize: 17.sp, height: 1.6.h),
                 ),
-              const SizedBox(height: 24),
+                SizedBox(height: 32.h),
+              ],
               // endregion
 
               // region Read More Button
@@ -101,15 +147,22 @@ class ArticleDetailScreen extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: EdgeInsets.symmetric(vertical: 18.h),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(8.r),
                     ),
+                    backgroundColor: theme.colorScheme.primary,
+                    foregroundColor: theme.colorScheme.onPrimary,
                   ),
                   onPressed: () => _openInAppWebView(context),
-                  child: const Text('Read Full Article'),
+                  child: Text(
+                    'Read Full Article',
+                    style: textTheme.labelLarge
+                        ?.copyWith(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
+              SizedBox(height: 16.h),
               // endregion
             ],
           ),
@@ -117,18 +170,16 @@ class ArticleDetailScreen extends StatelessWidget {
       ),
     );
   }
+  // endregion
 
-// endregion
-
-// region helpers
+  // region helpers
   void _openInAppWebView(BuildContext context) {
     Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) =>
-          ArticleWebViewScreen(
-            url: article.url,
-            title: article.source?.name ?? 'Article',
-          ),
+      builder: (_) => ArticleWebViewScreen(
+        url: article.url,
+        title: article.source?.name ?? 'Article',
+      ),
     ));
-// endregion
   }
+// endregion
 }

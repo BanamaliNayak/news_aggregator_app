@@ -53,6 +53,7 @@ dependencies:
   rxdart: ^0.28.0
   # Mobile Web View
   webview_flutter: ^4.13.0
+  flutter_screenutil: ^5.9.3
 
 dev_dependencies:
   flutter_test:

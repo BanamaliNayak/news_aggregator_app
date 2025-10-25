@@ -67,7 +67,7 @@ class _HomeScreenState extends State<HomeScreen>
               final isDark = state.themeMode == ThemeMode.dark;
               return IconButton(
                 icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
-                onPressed: () {
+                onPressed: () async {
                   context.read<ThemeBloc>().add(ToggleThemeEvent(!isDark));
                 },
               );
