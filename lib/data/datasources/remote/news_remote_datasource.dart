@@ -35,7 +35,6 @@ class NewsRemoteDataSourceImpl implements NewsRemoteDataSource {
           'q': category,
           'page': page,
           'pageSize': 20,
-          'sortBy': 'popularity',
         },
       );
 
