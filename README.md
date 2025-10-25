@@ -35,7 +35,7 @@ A Flutter-based news aggregator app built for a technical assignment. It fetches
 
 1.  **Clone the repository:**
     ```bash
-    git clone <your-repository-url>
+    git clone https://github.com/BanamaliNayak/news_aggregator_app.git
     cd news_aggregator
     ```
 
